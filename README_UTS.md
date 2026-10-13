@@ -1,12 +1,5 @@
 # Laporan UTS Praktikum Pemrograman Perangkat Bergerak
 
-**Tahun Akademik 2026/2027 - Politeknik Negeri Banyuwangi**
-
-> **Catatan UTS**: UTS - Pemrograman Perangkat Bergerak  
-> **Datetime**: 2026-10-13
-
----
-
 ## 1. Identitas Mahasiswa
 
 - **Nama**: Septian Asropik
@@ -25,11 +18,10 @@
 
 **Jawaban**:
 
-> _[Gunakan bahasa sendiri untuk menjawab]_  
-> Penerapan layout responsif di Flutter dapat dilakukan menggunakan `LayoutBuilder` atau `MediaQuery` untuk mengetahui lebar layar (_screen width_).
->
-> - **Layar Telepon (360 px)**: Digunakan layout tunggal (`ListView.builder`) dengan padding/margin yang proporsional serta bungkus teks menggunakan `Expanded` atau `Flexible` untuk mencegah _horizontal overflow_.
-> - **Layar Tablet (≥ 700 px)**: Menggunakan `GridView.builder` dengan `crossAxisCount: 2` atau `LayoutBuilder` yang secara dinamis mengubah struktur dari 1 kolom menjadi Grid 2 kolom berdasarkan batasan lebar (`constraints.maxWidth >= 700`).
+Penerapan layout responsif di Flutter dilakukan menggunakan `LayoutBuilder` atau `MediaQuery` untuk mendeteksi batasan lebar layar (_screen width_):
+
+- **Layar Telepon (360 px)**: Menggunakan layout tunggal (`ListView.builder`) dengan padding/margin yang proporsional serta membungkus elemen teks dengan `Expanded` atau `Flexible` untuk mencegah _horizontal overflow_.
+- **Layar Tablet (≥ 700 px)**: Menggunakan `GridView.builder` dengan `crossAxisCount: 2` (atau mengecek `constraints.maxWidth >= 700`) sehingga kartu tugas secara otomatis tersusun rapi dalam dua kolom.
 
 ---
 
@@ -39,10 +31,8 @@
 
 **Jawaban**:
 
-> _[Gunakan bahasa sendiri untuk menjawab]_
->
-> - **Validasi Form**: Menggunakan `FormState` dan `TextEditingController` atau `FormField.validator`. Fungsi `.trim()` dipanggil pada string input (`titleController.text.trim()`) untuk menghapus spasi berlebih di awal/akhir. Jika hasil `trim()` kosong (`isEmpty`), sistem akan mengembalikan pesan error validasi sehingga data tidak diproses.
-> - **Navigasi**: Halaman form dibuka menggunakan `Navigator.push` yang mengembalikan objek `Future<Task?>`. Saat tombol **Simpan** ditekan dan validasi lolos, `Navigator.pop(context, newTask)` dipanggil untuk mengembalikan data `Task` baru ke halaman sebelumnya. Jika tombol **Batal** ditekan, `Navigator.pop(context, null)` dipanggil tanpa mengubah daftar.
+- **Validasi Form**: Menggunakan `TextEditingController` dan `FormField.validator`. Fungsi `.trim()` dipanggil pada string input (`titleController.text.trim()`) untuk menghapus spasi berlebih di awal dan akhir. Jika hasil `trim()` bernilai kosong (`isEmpty`), sistem menampilkan pesan error validasi dan menolak penyimpanan data.
+- **Navigasi**: Halaman form dibuka menggunakan `Navigator.push` yang mengembalikan objek `Future<Task?>`. Saat tombol **Simpan** ditekan dan validasi berhasil, `Navigator.pop(context, newTask)` dipanggil untuk mengembalikan objek `Task` baru. Jika tombol **Batal** ditekan, `Navigator.pop(context, null)` dipanggil tanpa mengubah daftar tugas.
 
 ---
 
@@ -52,12 +42,11 @@
 
 **Jawaban**:
 
-> _[Gunakan bahasa sendiri untuk menjawab]_  
-> Pembaruan tampilan secara _real-time_ memanfaatkan `StatefulWidget` dan pemanggilan `setState()`.
->
-> - Saat tugas baru ditambahkan atau status tugas diubah (`task.isCompleted = !task.isCompleted`), perubahan dilakukan pada daftar `List<Task>`.
-> - Pemanggilan `setState()` memicu Flutter untuk merender ulang (_rebuild_) widget `build()`.
-> - Komponen ringkasan yang menghitung tugas selesai/total (`tasks.where((t) => t.isCompleted).length`) serta kartu tugas dalam `ListView`/`GridView` otomatis diperbarui sesuai dengan data state terbaru.
+Pembaruan tampilan secara _real-time_ memanfaatkan `StatefulWidget` dan pemanggilan `setState()`:
+
+- Saat tugas baru ditambahkan ke `List<Task>` atau status `isCompleted` diubah (`task.isCompleted = !task.isCompleted`), perubahan dilakukan pada state lokal.
+- Pemanggilan `setState()` memicu Flutter untuk merender ulang (_rebuild_) widget.
+- Komponen ringkasan tugas (yang menghitung jumlah tugas selesai dan total) serta kartu tugas pada daftar otomatis diperbarui sesuai dengan data state terbaru.
 
 ---
 
@@ -67,14 +56,12 @@
 
 **Jawaban**:
 
-> _[Gunakan bahasa sendiri untuk menjawab]_
->
-> - **Operasi Asynchronous**: Pembacaan data dari penyimpanan lokal (`SharedPreferences`) memerlukan waktu I/O. Menggunakan `async-await` / `Future` mencegah pemblokiran _UI thread_ (mencegah aplikasi _freeze_).
-> - **Pengelolaan 4 State UI**: Menggunakan variabel enum/state (misal: `isLoading`, `errorMessage`, dan pengecekan `tasks.isEmpty`).
->   1. **Loading**: Menampilkan `CircularProgressIndicator()`.
->   2. **Error**: Jika terjadi kegagalan/exception, `errorMessage` diisi dan UI menampilkan pesan error beserta tombol **Coba Lagi** yang memanggil ulang fungsi muat data.
->   3. **Empty**: Jika data berhasil dimuat tetapi `tasks.isEmpty`, tampilkan widget _Empty State_.
->   4. **Data**: Jika data tersedia, tampilkan daftar kartu tugas dan ringkasan.
+- **Operasi Asynchronous**: Pembacaan data dari penyimpanan lokal (`SharedPreferences`) memerlukan proses I/O. Menggunakan `async-await` / `Future` memastikan _UI thread_ tidak terblokir sehingga aplikasi tetap responsif dan tidak mengalami _freeze_.
+- **Pengelolaan 4 State UI**:
+  1. **Loading**: Menampilkan `CircularProgressIndicator()` saat data sedang dimuat.
+  2. **Empty**: Jika data berhasil dimuat tetapi daftar kosong (`tasks.isEmpty`), menampilkan widget _Empty State_.
+  3. **Data**: Jika data tersedia, menampilkan daftar kartu tugas beserta ringkasannya.
+  4. **Error**: Jika terjadi kegagalan, menampilkan pesan error yang jelas dan menyediakan tombol **Coba Lagi** (_retry_) yang memanggil ulang fungsi pemuatan data.
 
 ---
 
@@ -84,11 +71,9 @@
 
 **Jawaban**:
 
-> _[Gunakan bahasa sendiri untuk menjawab]_
->
-> - **Serialisasi JSON**: Model `Task` dilengkapi metode `toJson()` (mengubah objek ke `Map<String, dynamic>`) dan `Task.fromJson()` (mengonversi `Map` kembali ke objek `Task`). Daftar tugas `List<Task>` dienkode menjadi string JSON menggunakan `jsonEncode()`.
-> - **Penyimpanan**: Menggunakan instance `SharedPreferences.getInstance()`, string JSON disimpan dengan kunci tertentu via `prefs.setString('tasks_key', jsonString)`.
-> - **Pembacaan**: Saat aplikasi dibuka, string JSON dibaca via `prefs.getString('tasks_key')`. String didekode dengan `jsonDecode()` menjadi `List<dynamic>`, lalu dipetakan (_mapping_) kembali menjadi `List<Task>` dengan `Task.fromJson()`.
+- **Serialisasi JSON**: Model `Task` dilengkapi metode `toJson()` (mengubah objek ke `Map<String, dynamic>`) dan `Task.fromJson()` (mengonversi `Map` kembali ke objek `Task`). Daftar tugas `List<Task>` di-encode menjadi string JSON menggunakan `jsonEncode()`.
+- **Penyimpanan**: Menggunakan instance `SharedPreferences.getInstance()`, string JSON disimpan ke penyimpanan lokal perangkat via `prefs.setString('tasks_key', jsonString)`.
+- **Pembacaan**: Saat aplikasi dibuka kembali, string JSON dibaca via `prefs.getString('tasks_key')`, didekode dengan `jsonDecode()`, lalu dipetakan (_mapping_) kembali menjadi `List<Task>` menggunakan `Task.fromJson()`.
 
 ---
 
@@ -120,16 +105,16 @@
 
 ## 4. Status Kriteria Penerimaan (_Acceptance Criteria_ A - H)
 
-| Kriteria | Deskripsi Kriteria Penerimaan                                                                     |    Status Pengerjaan    | Catatan |
-| :------: | :------------------------------------------------------------------------------------------------ | :---------------------: | :------ |
-|  **A**   | Telepon (360 px): Tidak ada _overflow_ horizontal & kontrol terbaca.                              | [ ] Selesai / [ ] Belum |         |
-|  **B**   | Tablet (≥ 700 px): Kartu tersusun 2 kolom dan tetap terbaca.                                      | [ ] Selesai / [ ] Belum |         |
-|  **C**   | Form Validasi: Judul/Mata kuliah kosong/spasi ditolak dengan pesan validasi.                      | [ ] Selesai / [ ] Belum |         |
-|  **D**   | Navigasi: Detail menerima `Task`; Simpan kembalikan data; Batal tidak ubah data.                  | [ ] Selesai / [ ] Belum |         |
-|  **E**   | State: Penambahan & perubahan status langsung perbarui daftar dan ringkasan.                      | [ ] Selesai / [ ] Belum |         |
-|  **F**   | Async & State UI: State _loading_, _empty_, _data_, & _error_ tampil; tombol Coba Lagi berfungsi. | [ ] Selesai / [ ] Belum |         |
-|  **G**   | Persistensi: Data dan status tetap bertahan setelah aplikasi ditutup & dibuka kembali.            | [ ] Selesai / [ ] Belum |         |
-|  **H**   | Verifikasi: Aplikasi berjalan lancar, hasil `flutter analyze` & langkah uji dicatat.              | [ ] Selesai / [ ] Belum |         |
+| Kriteria | Deskripsi Kriteria Penerimaan                                                                     | Status Pengerjaan | Catatan                                                                                                                             |
+| :------: | :------------------------------------------------------------------------------------------------ | :---------------: | :---------------------------------------------------------------------------------------------------------------------------------- |
+|  **A**   | Telepon (360 px): Tidak ada _overflow_ horizontal & kontrol terbaca.                              |    [x] Selesai    | Layout menggunakan `ListView.builder` dan `Expanded`/`Flexible`. Telah diuji pada layar 360 px tanpa terjadi horizontal overflow.   |
+|  **B**   | Tablet (≥ 700 px): Kartu tersusun 2 kolom dan tetap terbaca.                                      |    [x] Selesai    | Menggunakan `LayoutBuilder` / `GridView.builder` dengan `crossAxisCount: 2` pada lebar ≥ 700 px, kartu tersusun rapi dalam 2 kolom. |
+|  **C**   | Form Validasi: Judul/Mata kuliah kosong/spasi ditolak dengan pesan validasi.                      |    [x] Selesai    | Fungsi `.trim()` diterapkan pada input Judul & Mata Kuliah; input kosong/hanya spasi berhasil ditolak dengan pesan error.           |
+|  **D**   | Navigasi: Detail menerima `Task`; Simpan kembalikan data; Batal tidak ubah data.                  |    [x] Selesai    | Navigasi `Navigator.push` dan `pop(context, newTask)` berjalan baik; tombol Batal mengembalikan `null` tanpa mengubah state.        |
+|  **E**   | State: Penambahan & perubahan status langsung perbarui daftar dan ringkasan.                      |    [x] Selesai    | Pemanggilan `setState()` memperbarui daftar tugas dan komponen ringkasan (_counter_) secara _real-time_ saat data berubah.          |
+|  **F**   | Async & State UI: State _loading_, _empty_, _data_, & _error_ tampil; tombol Coba Lagi berfungsi. |    [x] Selesai    | Berhasil mengelola 4 state UI (`isLoading`, `isEmpty`, `isError`, dan `hasData`). Tombol _Coba Lagi_ berfungsi memuat ulang data.   |
+|  **G**   | Persistensi: Data dan status tetap bertahan setelah aplikasi ditutup & dibuka kembali.            |    [x] Selesai    | Menggunakan `SharedPreferences` dan `jsonEncode`/`jsonDecode`; data tugas dan status `isCompleted` tersimpan secara permanen.       |
+|  **H**   | Verifikasi: Aplikasi berjalan lancar, hasil `flutter analyze` & langkah uji dicatat.              |    [x] Selesai    | Pengujian manual dan pemeriksaan statis `flutter analyze` berjalan lancar tanpa menemukan kesalahan (_no issues found_).            |
 
 ---
 
@@ -147,9 +132,7 @@
 
 ## 6. Catatan Error Tersisa / Belum Selesai
 
-> _Catat jika masih terdapat bug, error, atau kriteria yang belum sempat diselesaikan hingga waktu ujian berakhir:_
->
-> - **Status**: (Sebutkan jika semua fitur berfungsi lancar, atau tuliskan bagian yang belum selesai / kendala yang dihadapi).
+> **Status**: Semua fitur dan kriteria penerimaan (A - H) telah diselesaikan dengan baik. Tidak ada bug atau error yang tersisa, aplikasi berjalan dengan lancar saat dilakukan pengujian manual maupun pemeriksaan statis.
 
 ---
 
@@ -160,3 +143,17 @@ flutter analyze
 Analyzing starter-uts...
 No issues found! (ran in 3.4s)
 ```
+
+## 8. Bukti Tampilan Aplikasi (Screenshot)
+
+Berikut adalah bukti tangkapan layar aplikasi yang dijalankan pada mode tampilan HP dan Tablet:
+
+### Tampilan Telepon (360 px)
+
+![Tampilan Telepon](screenshots/phone.jpeg)
+_Keterangan: Tampilan list card tugas secara vertikal (1 kolom) pada layar telepon tanpa terjadi overflow._
+
+### Tampilan Tablet (≥ 700 px)
+
+![Tampilan Tablet](screenshots/tablet.jpeg)
+_Keterangan: Tampilan card tugas tersusun dalam 2 kolom secara responsif pada layar tablet._
